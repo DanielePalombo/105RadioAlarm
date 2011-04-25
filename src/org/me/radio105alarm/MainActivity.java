@@ -2,13 +2,16 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.me.radio105alarm;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -25,165 +28,175 @@ import android.widget.Gallery.LayoutParams;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.ViewSwitcher;
+
 /**
  *
  * @author ksemuldie
  */
 public class MainActivity extends Activity {
 
-    private Button streamButton;
+  private Button streamButton;
+  private ImageButton playButton;
+  private TextView textStreamed;
+  private boolean isPlaying;
+  private boolean isStarting = false;
+  private StreamingMediaPlayer audioStreamer;
 
- private ImageButton playButton;
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    // requestWindowFeature(Window.FEATURE_NO_TITLE);
 
- private TextView textStreamed;
-
- private boolean isPlaying;
-
- private StreamingMediaPlayer audioStreamer;
-
- @Override
- public void onCreate(Bundle savedInstanceState)
- {
-  super.onCreate(savedInstanceState);
-  // requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-  setContentView(R.layout.main);
-  initControls();
+    setContentView(R.layout.main);
+    initControls();
 
 
- }
- protected void onDestroy()
- {
-  super.onDestroy();
-
-  Toast.makeText(MainActivity.this, "...exiting application..." ,Toast.LENGTH_SHORT).show();
-  if ( audioStreamer != null)
-  {
-   audioStreamer.interrupt();
   }
 
- }
+  protected void onDestroy() {
+    super.onDestroy();
 
- private void initControls()
- {
-  textStreamed = (TextView) findViewById(R.id.text_kb_streamed);
-  streamButton = (Button) findViewById(R.id.button_stream);
-  streamButton.setOnClickListener(new View.OnClickListener()
-  {
-   public void onClick(View view)
-   {
-
-    String urlstring2 = "http://shoutcast.unitedradio.it:1101";
-
-
-    Toast
-    .makeText(
-      MainActivity.this,
-       "The following stream is about to start" + urlstring2,
-      Toast.LENGTH_LONG).show();
-    startStreamingAudio(urlstring2);
-   }
-  });
-
-  playButton = (ImageButton) findViewById(R.id.button_play);
-  playButton.setEnabled(false);
-  playButton.setOnClickListener(new View.OnClickListener()
-  {
-   public void onClick(View view)
-   {
-    if (audioStreamer.getMediaPlayer().isPlaying())
-    {
-     audioStreamer.getMediaPlayer().pause();
-     playButton.setImageResource(R.drawable.button_play);
-    } else
-    {
-     audioStreamer.getMediaPlayer().start();
-     audioStreamer.startPlayProgressUpdater();
-     playButton.setImageResource(R.drawable.button_pause);
+    Toast.makeText(MainActivity.this, "...exiting application...", Toast.LENGTH_SHORT).show();
+    if (audioStreamer != null) {
+      audioStreamer.interrupt();
     }
-    isPlaying = !isPlaying;
-   }
-  });
- }
- private void startStreamingAudio(String urlstring) {
-  try {
-   final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-   if ( audioStreamer != null) {
-    audioStreamer.interrupt();
-   }
-   audioStreamer = new StreamingMediaPlayer(this,textStreamed, playButton, streamButton,progressBar);
-   audioStreamer.startStreaming(urlstring,5208, 216);
-   streamButton.setEnabled(false);
-  } catch (Exception e)
-  {
-   Log.e(getClass().getName(), "Error starting to stream audio.", e);
+
   }
 
- }
+  private void initControls() {
+    textStreamed = (TextView) findViewById(R.id.text_kb_streamed);
+    streamButton = (Button) findViewById(R.id.button_stream);
+    streamButton.setOnClickListener(new View.OnClickListener() {
 
- public void onItemSelected(AdapterView parent, View v, int position, long id)
- {
-  mSwitcher.setImageResource(mImageIds[position]);
- }
+      public void onClick(View view) {
+        String urlstring2 = "http://shoutcast.unitedradio.it:1101";
 
- public void onNothingSelected(AdapterView parent)
- {
- }
+        Toast.makeText(
+                MainActivity.this,
+                "The following stream is about to start" + urlstring2,
+                Toast.LENGTH_LONG).show();
+        startStreamingAudio(urlstring2);
+        isStarting = true ;
+      }
+    });
 
- public View makeView()
- {
-  ImageView i = new ImageView(this);
-  i.setBackgroundColor(0xFF000000);
-  i.setScaleType(ImageView.ScaleType.FIT_CENTER);
-  i.setLayoutParams(new ImageSwitcher.LayoutParams(
-    LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-  return i;
- }
+    playButton = (ImageButton) findViewById(R.id.button_play);
+    //playButton.setEnabled(false);
+    playButton.setOnClickListener(new View.OnClickListener() {
 
- private ImageSwitcher mSwitcher;
+      public void onClick(View view) {
+        if (!isStarting) {
+          String urlstring2 = "http://shoutcast.unitedradio.it:1101";
 
- public class ImageAdapter extends BaseAdapter
- {
-  public ImageAdapter(Context c)
-  {
-   mContext = c;
+
+          Toast.makeText(
+                  MainActivity.this,
+                  "The following stream is about to start" + urlstring2,
+                  Toast.LENGTH_LONG).show();
+          startStreamingAudio(urlstring2);
+          isStarting = true ;
+          return ;
+        }
+
+        if (audioStreamer.getMediaPlayer().isPlaying()) {
+          audioStreamer.getMediaPlayer().pause();
+          playButton.setImageResource(R.drawable.button_play);
+        } else {
+          audioStreamer.getMediaPlayer().start();
+          audioStreamer.startPlayProgressUpdater();
+          playButton.setImageResource(R.drawable.button_pause);
+        }
+        isPlaying = !isPlaying;
+      }
+    });
   }
 
-  public int getCount()
-  {
-   return mThumbIds.length;
+  private void startStreamingAudio(String urlstring) {
+    try {
+      final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+      if (audioStreamer != null) {
+        audioStreamer.interrupt();
+      }
+      audioStreamer = new StreamingMediaPlayer(this, textStreamed, playButton, streamButton, progressBar);
+      audioStreamer.startStreaming(urlstring, 5208, 216);
+      streamButton.setEnabled(false);
+    } catch (Exception e) {
+      Log.e(getClass().getName(), "Error starting to stream audio.", e);
+    }
+
   }
 
-  public Object getItem(int position)
-  {
-   return position;
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+      MenuInflater inflater = getMenuInflater();
+      inflater.inflate(R.menu.radio_menu, menu);
+
+      return true;
   }
 
-  public long getItemId(int position)
-  {
-   return position;
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle item selection
+    switch (item.getItemId()) {
+      case R.id.edit_alarm:
+        Log.i("INFOV" , "Modify alarm setting ");
+
+        Intent myIntent = new Intent(this, EditAlarmActivity.class);
+        startActivity(myIntent);
+
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
   }
 
-  public View getView(int position, View convertView, ViewGroup parent)
-  {
-   ImageView i = new ImageView(mContext);
-
-   i.setImageResource(mThumbIds[position]);
-   i.setAdjustViewBounds(true);
-   i.setLayoutParams(new Gallery.LayoutParams(
-     LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-   i.setBackgroundResource(R.drawable.picture_frame);
-   return i;
+  public void onItemSelected(AdapterView parent, View v, int position, long id) {
+    mSwitcher.setImageResource(mImageIds[position]);
   }
 
-  private Context mContext;
+  public void onNothingSelected(AdapterView parent) {
+  }
 
- }
+  public View makeView() {
+    ImageView i = new ImageView(this);
+    i.setBackgroundColor(0xFF000000);
+    i.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    i.setLayoutParams(new ImageSwitcher.LayoutParams(
+            LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    return i;
+  }
+  private ImageSwitcher mSwitcher;
 
- private Integer[] mThumbIds =
- { R.drawable.calculator, R.drawable.calendar, R.drawable.camera };
+  public class ImageAdapter extends BaseAdapter {
 
- private Integer[] mImageIds =
- { R.drawable.calculator, R.drawable.calendar, R.drawable.camera };
+    public ImageAdapter(Context c) {
+      mContext = c;
+    }
 
+    public int getCount() {
+      return mThumbIds.length;
+    }
+
+    public Object getItem(int position) {
+      return position;
+    }
+
+    public long getItemId(int position) {
+      return position;
+    }
+
+    public View getView(int position, View convertView, ViewGroup parent) {
+      ImageView i = new ImageView(mContext);
+
+      i.setImageResource(mThumbIds[position]);
+      i.setAdjustViewBounds(true);
+      i.setLayoutParams(new Gallery.LayoutParams(
+              LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+      i.setBackgroundResource(R.drawable.picture_frame);
+      return i;
+    }
+    private Context mContext;
+  }
+  private Integer[] mThumbIds = {R.drawable.calculator, R.drawable.calendar, R.drawable.camera};
+  private Integer[] mImageIds = {R.drawable.calculator, R.drawable.calendar, R.drawable.camera};
 }

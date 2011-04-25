@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <string name="app_name">Radio105Alarm</string>
+    <string name="app_name">Radio 105 Wake up Alarm</string>
+    <string name="edit_alarm">Edit Alarm</string>
+    <string-array name="week_days_array">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Enabled</item>
+    </string-array>
 </resources>

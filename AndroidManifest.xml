@@ -2,12 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
      package="org.me.radio105alarm">
     <application>
-         <activity android:name=".MainActivity" android:label="MainActivity">
+         <activity android:name=".MainActivity" android:label="Radio 105 Wake Up Alarm">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".EditAlarmActivity" android:label="@string/edit_alarm" />
+        <!--<receiver  android:process=":remote" android:name=".AlarmReceiver"></receiver>-->
+        <service android:name=".AlarmService" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SET_ALARM" />
+    <!--<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />-->
 </manifest>
